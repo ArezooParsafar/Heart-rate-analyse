@@ -110,7 +110,7 @@
       document.addEventListener("DOMContentLoaded", function () {
           access_token = sessionStorage.getItem("access_token");
           user_id = sessionStorage.getItem("user_id_token");
-
+          debugger;
           if (!access_token && !user_id) {
               window.location.replace("./index.html");
           }
