@@ -105,7 +105,74 @@
       var endTime;
       var timeRange;
       var detailLevel;
-      debugger;
+
+      var ctx = document.getElementById("intradayChart").getContext("2d");
+      var chartConfig = {
+          type: "bar",
+          data: {
+              labels: [],
+              datasets: [
+                  {
+                      lineTension: 1,
+                      backgroundColor: "transparent",
+                      borderColor: "#007bff",
+                      borderWidth: 4,
+                      pointBackgroundColor: "#007bff",
+                      pointRadius: 0,
+                      fill: false,
+                      data: [],
+                      spanGaps: false
+                  }
+              ]
+          },
+          options: {
+              maintainAspectRatio: false,
+
+              scales: {
+                  yAxes: [
+                      {
+                          scaleLabel: {
+                              display: true,
+                              labelString: "beats per minute"
+                          },
+                          ticks: {
+                              beginAtZero: false
+                          }
+                      }
+                  ],
+                  xAxes: [
+                      {
+                          scaleLabel: {
+                              display: true,
+                              labelString: "time"
+                          },
+                          ticks: {
+                              beginAtZero: false
+                          }
+                      }
+                  ]
+              },
+              legend: {
+                  display: false
+              },
+              tooltips: {
+                  mode: "index",
+                  intersect: false,
+                  callbacks: {
+                      label: function (tooltipItem, data) {
+                          var label = data.datasets[tooltipItem.datasetIndex].label || "";
+
+                          if (label) {
+                              label += ": ";
+                          }
+                          label += tooltipItem.yLabel + " bpm";
+                          return label;
+                      }
+                  }
+              }
+          }
+      };
+
 
 
       document.addEventListener("DOMContentLoaded", function () {
