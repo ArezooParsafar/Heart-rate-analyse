@@ -111,7 +111,7 @@
             user_id = sessionStorage.getItem("user_id_token");
             debugger;
             if (!access_token && !user_id) {
-                document.getElementById("main-container").innerHTML('<h1 class="display-4">Welcome</h1>' +
+                $("#main-container").html('<h1 class="display-4">Welcome</h1>' +
                     '<p>Learn about' +
                         +'<a href = "https://www.fitbit.com/oauth2/authorize?response_type=token&client_id=23BCMX&redirect_uri=https%3A%2F%2Fhr-analyse.herokuapp.com%2Findex.html&scope=activity%20heartrate&expires_in=604800" >'
                           + 'please signup to Fitbit'
