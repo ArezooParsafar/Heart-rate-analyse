@@ -1,322 +1,81 @@
+<!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Fitbit API JavaScript</title>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+  </head>
 
-</head>
-
-<body>
-    <div class="col-lg-4" id="main-container">
-        <form>
-            <fieldset class="form-group align-items-center">
-                <div class="row">
-                    <legend class="col-form-label col-form-label-lg col-sm-3 pt-0">
-                        Detail Level
-                    </legend>
-                    <div class="col-sm-9">
-                        <div class="form-check">
-                            <input class="form-check-input"
-                                   type="radio"
-                                   name="detailLevel"
-                                   id="perMinute"
-                                   value="minute"
-                                   checked="" />
-                            <label class="form-check-label" for="perMinute">
-                                per Minute
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input"
-                                   type="radio"
-                                   name="detailLevel"
-                                   id="perSecond"
-                                   value="second" />
-                            <label class="form-check-label" for="perSecond">
-                                per Second
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </fieldset>
-            <div class="form-group row">
-                <label for="colFormLabelLg"
-                       class="col-sm-3 col-form-label col-form-label-lg">Date</label>
-                <div class="col-sm-9">
-                    <input class="form-control form-control-lg" name="date" />
-                </div>
-            </div>
-            <div class="row mb-3">
-                <legend class="col-form-label col-form-label-lg col-sm-3 pt-0">
-                    Time Range
-                </legend>
-                <div id="form" class="col-sm-9">
-                    <label for="startTime">Start time</label>
-                    <input type="time"
-                           class="form-control"
-                           id="startTime"
-                           placeholder="optional" />
-                    <div class="invalid-feedback">
-                        Start time must be before end time
-                    </div>
-                    <label for="endTime">End time</label>
-                    <input type="time"
-                           class="form-control"
-                           id="endTime"
-                           placeholder="optional" />
-                    <div class="invalid-feedback">
-                        End time must be before start time
-                    </div>
-                </div>
-            </div>
-            <button onclick="handleSubmit()"
-                    class="btn btn-primary btn-lg btn-block"
-                    type="button">
-                Get the data
-            </button>
-        </form>
-        <hr class="mb-2" />
-
-        <button id="download_button"
-                type="button"
-                class="btn btn-success btn-lg btn-block">
-            Download data to .csv
-        </button>
+  <body>
+    <div class="text-center">
+      <h1 class="display-4">Welcome</h1>
+      <p>
+        Learn about
+        <a
+          href="https://www.fitbit.com/oauth2/authorize?response_type=token&client_id=23BCMX&redirect_uri=https%3A%2F%2Fhr-analyse.herokuapp.com%2Fdownload.html&scope=activity%20heartrate%20weight&expires_in=604800"
+          >please signup to Fitbit</a
+        >.
+      </p>
     </div>
+  </body>
+</html>
+<script>
+    var userName;
 
-    <div class="col-lg-8">
-        <div class="row">
-            <div class="chart-container">
-                <div class="chartjs-size-monitor" style="position: absolute; inset: 0px; overflow: hidden; pointer-events: none; visibility: hidden; z-index: -1;"><div class="chartjs-size-monitor-expand" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;"><div style="position:absolute;width:1000000px;height:1000000px;left:0;top:0"></div></div><div class="chartjs-size-monitor-shrink" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;"><div style="position:absolute;width:200%;height:200%;left:0; top:0"></div></div></div>
-                <canvas id="intradayChart" style="display: block; width: 775px; height: 276px;" width="775" height="276" class="chartjs-render-monitor"></canvas>
-            </div>
-        </div>
-    </div>
+    var user_id;
+    var access_token;
 
-    <script>
-        var access_token;
-        var user_id;
-        var userHeartRateData;
-        var date;
-        var startTime;
-        var endTime;
-        var timeRange;
-        var detailLevel;
+    window.onload = function () {
+        access_token = getAccessToken();
+
+        // Optional: an ID Token will be returned by Auth0
+        // if your response_type argument contained id_token
         debugger;
+        user_id = getIdToken();
 
-
-        document.addEventListener("DOMContentLoaded", function () {
+        if (access_token && user_id) {
+            sessionStorage.setItem("access_token", access_token);
+            sessionStorage.setItem("user_id_token", user_id);
+        } else {
             access_token = sessionStorage.getItem("access_token");
             user_id = sessionStorage.getItem("user_id_token");
-            debugger;
-            if (!access_token && !user_id) {
-                $("#main-container").html('<h1 class="display-4">Welcome</h1>' +
-                    '<a href = "https://www.fitbit.com/oauth2/authorize?response_type=token&client_id=23BCMX&redirect_uri=https%3A%2F%2Fhr-analyse.herokuapp.com%2Findex.html&scope=activity%20heartrate&expires_in=604800" >'
-                    + 'please signup to Fitbit'
-                    + '</a >.')
-            }
-
-            $(function () {
-                $('input[name="date"]').daterangepicker({
-                    singleDatePicker: true,
-                    showDropdowns: true,
-                    maxDate: new Date()
-                });
-            });
-
-            window.intradayChart = new Chart(ctx, chartConfig);
-        });
-
-        function handleSubmit() {
-            date = $('input[name="date"]').val();
-            date = formatDate(date);
-
-            startTime = document.getElementById("startTime").value;
-            endTime = document.getElementById("endTime").value;
-
-            if (startTime) {
-                timeRange = "/time/" + startTime;
-                if (endTime) {
-                    timeRange += "/" + endTime;
-                } else {
-                    timeRange += "/23:59";
-                }
-            } else {
-                timeRange = "";
-            }
-
-            if (startTime && endTime) {
-                if (moment(startTime, "HH:mm").isBefore(moment(endTime, "HH:mm"))) {
-                    document.getElementById("startTime").className = "form-control";
-                    document.getElementById("endTime").className = "form-control";
-                    getUserHeartRateData(date);
-                } else {
-                    document.getElementById("startTime").className =
-                        "form-control is-invalid";
-                    document.getElementById("endTime").className = "form-control is-invalid";
-                }
-            } else {
-                getUserHeartRateData(date);
-            }
         }
 
-        function formatDate(day) {
-            var sections = day.split("/");
-            var year = sections.pop();
-            sections.unshift(year);
-
-            var result = sections.join("-");
-
-            return result;
+        if (access_token && user_id) {
+            getUserName();
+            window.location.replace("./download.html")
         }
+    };
 
-        function getUserHeartRateData(date) {
-            var header = new Headers();
-            header.append("Authorization", "Bearer " + access_token);
-            var init = {
-                headers: header
-            };
-
-            fetch(createFitbitRequest(date), init)
-                .then(function (heartRateData) {
-                    return heartRateData.json();
-                })
-                .then(function (heartRateData) {
-                    userHeartRateData = heartRateData["activities-heart-intraday"].dataset;
-
-                    exportCSVFile(userHeartRateData);
-
-                    createInterdayGraph(userHeartRateData);
-                });
-        }
-
-        function createFitbitRequest(day) {
-            if ($("#perMinute").is(":checked")) {
-                detailLevel = "1min";
-            } else {
-                detailLevel = "1sec";
-            }
-            debugger;
-            return (
-                "https://api.fitbit.com/1/user/" +
-                user_id +
-                "/activities/heart/date/" +
-                day +
-                "/1d/" +
-                detailLevel +
-                timeRange +
-                ".json"
-            );
-        }
-
-        var customTooltips = function (tooltip) {
-            $(this._chart.canvas).css("cursor", "pointer");
-
-            var positionY = this._chart.canvas.offsetTop;
-            var positionX = this._chart.canvas.offsetLeft;
-
-            $(".chartjs-tooltip").css({
-                opacity: 0
-            });
-
-            if (!tooltip || !tooltip.opacity) {
-                return;
-            }
-
-            if (tooltip.dataPoints.length > 0) {
-                tooltip.dataPoints.forEach(function (dataPoint) {
-                    var content = dataPoint.yLabel + " bpm <br> at " + dataPoint.xLabel;
-                    var $tooltip = $("#tooltip-" + dataPoint.datasetIndex);
-
-                    $tooltip.html(content);
-                    $tooltip.css({
-                        opacity: 1,
-                        top: 25 + positionY + dataPoint.y + "px",
-                        left: positionX + dataPoint.x + "px"
-                    });
-                });
-            }
+    function getUserName() {
+        var header = new Headers();
+        header.append("Authorization", "Bearer " + access_token);
+        var init = {
+            headers: header
         };
 
-        function createInterdayGraph(heartRateData) {
-            var xValues = [];
-            var yValues = [];
-
-            heartRateData.forEach(function (data, idx, arr) {
-                if (detailLevel === "1min") {
-                    if (
-                        idx !== arr.length - 1 &&
-                        moment(data.time, "HH-mm-ss")
-                            .add(1, "m")
-                            .isBefore(moment(arr[idx + 1].time, "HH-mm-ss"))
-                    ) {
-                        var currentTime = moment(data.time, "HH-mm-ss");
-                        while (currentTime.isBefore(moment(arr[idx + 1].time, "HH-mm-ss"))) {
-                            xValues.push(currentTime.format("LT"));
-                            yValues.push(null);
-                            currentTime = currentTime.add(1, "m");
-                        }
-                    } else {
-                        xValues.push(moment(data.time, "HH-mm-ss").format("LT"));
-                        yValues.push(data.value);
-                    }
-                } else {
-                    if (
-                        idx !== arr.length - 1 &&
-                        moment(data.time, "HH-mm-ss")
-                            .add(18, "s")
-                            .isBefore(moment(arr[idx + 1].time, "HH-mm-ss"))
-                    ) {
-                        var currentTime = moment(data.time, "HH-mm-ss");
-                        while (currentTime.isBefore(moment(arr[idx + 1].time, "HH-mm-ss"))) {
-                            xValues.push(currentTime.format("LTS"));
-                            yValues.push(null);
-                            currentTime = currentTime.add(18, "s");
-                        }
-                    } else {
-                        xValues.push(moment(data.time, "HH-mm-ss").format("LTS"));
-                        yValues.push(data.value);
-                    }
-                }
+        fetch(createUsernameRequest(), init)
+            .then(function (profileData) {
+                return profileData.json();
+            })
+            .then(function (profileData) {
+                $("#welcome").append(", " + profileData.user.displayName);
             });
+    }
 
-            window.intradayChart.config.data.labels = xValues;
-            window.intradayChart.config.data.datasets[0].data = yValues;
+    function createUsernameRequest() {
+        return "https://api.fitbit.com/1/user/" + user_id + "/profile.json";
+    }
 
-            window.intradayChart.update();
-        }
+    function getParameterByName(name) {
+        var match = RegExp("[#&]" + name + "=([^&]*)").exec(window.location.hash);
+        return match && decodeURIComponent(match[1].replace(/\+/g, " "));
+    }
 
-        function exportCSVFile(array) {
-            var csv = convertToCSV(array);
+    function getAccessToken() {
+        return getParameterByName("access_token");
+    }
 
-            var exportedFilenmae = date + ".csv";
+    function getIdToken() {
+        return getParameterByName("user_id");
+    }
 
-            var blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-
-            var link = document.getElementById("download-link");
-            if (link.download !== undefined) {
-                // feature detection
-                // Browsers that support HTML5 download attribute
-                var url = URL.createObjectURL(blob);
-                link.setAttribute("href", url);
-                link.setAttribute("download", exportedFilenmae);
-                link.style.display = "block";
-            }
-        }
-
-        function convertToCSV(data) {
-            var string = d3.csvFormatRows(
-                [["Time", "Heart Rate"]].concat(
-                    data.map(function (d, i) {
-                        return [d.time, d.value];
-                    })
-                )
-            );
-            return string;
-        }
-
-    </script>
-
-</body>
-</html>
+</script>
