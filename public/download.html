@@ -7,7 +7,10 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
     <script type="text/javascript" src="https://d3js.org/d3.v5.js"></script>
-  
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" />
+
 </head>
 
 <body>
@@ -90,7 +93,12 @@
     <div class="col-lg-8">
         <div class="row">
             <div class="chart-container">
-                <div class="chartjs-size-monitor" style="position: absolute; inset: 0px; overflow: hidden; pointer-events: none; visibility: hidden; z-index: -1;"><div class="chartjs-size-monitor-expand" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;"><div style="position:absolute;width:1000000px;height:1000000px;left:0;top:0"></div></div><div class="chartjs-size-monitor-shrink" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;"><div style="position:absolute;width:200%;height:200%;left:0; top:0"></div></div></div>
+                <div class="chartjs-size-monitor" style="position: absolute; inset: 0px; overflow: hidden; pointer-events: none; visibility: hidden; z-index: -1;">
+                <div class="chartjs-size-monitor-expand" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;">
+                    <div style="position:absolute;width:1000000px;height:1000000px;left:0;top:0"></div></div>
+                <div class="chartjs-size-monitor-shrink" style="position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1;">
+                    <div style="position:absolute;width:200%;height:200%;left:0; top:0"></div></div>
+                </div>
                 <canvas id="intradayChart" style="display: block; width: 775px; height: 276px;" width="775" height="276" class="chartjs-render-monitor"></canvas>
             </div>
         </div>
@@ -183,12 +191,10 @@
               window.location.replace("./index.html");
           }
 
-          $(function () {
-              $('input[name="date"]').daterangepicker({
-                  singleDatePicker: true,
-                  showDropdowns: true,
-                  maxDate: new Date()
-              });
+          $('input[name="date"]').daterangepicker({
+              singleDatePicker: true,
+              showDropdowns: true,
+              maxDate: new Date()
           });
 
           window.intradayChart = new Chart(ctx, chartConfig);
